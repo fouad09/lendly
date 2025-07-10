@@ -1,0 +1,6 @@
+fastapi
+email_validator
+pandas 
+numpy
+google-cloud-storage
+alembic
