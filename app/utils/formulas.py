@@ -1,20 +1,6 @@
 import numpy_financial as npf
 import numpy as np
-income_dict =  {
-    "monthly_salary":0,
-    "rental_income_salary":0,
-    "education_salary":0,
-    "variable_pay":0
-}
 
-liabilities_dict =  {
-    "credit_card_1":0,
-    "credit_card_2":0,
-    "credit_card_3":0,
-    "credit_card_4":0,
-    "auto_loan":0,
-    "personal_loan":0,
-}
 
 def calculate_monthly_payment(
     purchase_price: float,
