@@ -4,3 +4,5 @@ pandas
 numpy
 google-cloud-storage
 alembic
+uvicorn
+gunicorn
