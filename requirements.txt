@@ -2,6 +2,7 @@ fastapi
 email_validator
 pandas 
 numpy
+numpy-financial
 google-cloud-storage
 alembic
 uvicorn
