@@ -1,4 +1,6 @@
 from fastapi import UploadFile
+import json
+import base64
 import pandas as pd
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -8,14 +10,15 @@ from app.config import settings
 
 
 BUCKET_NAME = settings.get('BUCKET_NAME')
-GOOGLE_APPLICATION_CREDENTIALS = settings.get('GOOGLE_APPLICATION_CREDENTIALS')
+GOOGLE_APPLICATION_CREDENTIALS_BASE_64 = settings.get('GOOGLE_APPLICATION_CREDENTIALS')
+GOOGLE_APPLICATION_CREDENTIALS = json.loads(base64.b64decode(GOOGLE_APPLICATION_CREDENTIALS_BASE_64))
 GOOGL_SHEET_RATE_ID = settings.get('GOOGL_SHEET_RATE_ID')
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 RANGE_NAME = 'Sheet1!A:AR' 
 
 
 def read_sheet():
-    credentials = service_account.Credentials.from_service_account_file(
+    credentials = service_account.Credentials.from_service_account_info(
         GOOGLE_APPLICATION_CREDENTIALS, scopes=SCOPES
     )
     service = build('sheets', 'v4', credentials=credentials)    
