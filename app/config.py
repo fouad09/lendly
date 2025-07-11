@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     BUCKET_NAME: str
     ENV: str
     ADMIN_SECRET_KEY: str
+    GOOGLE_APPLICATION_CREDENTIALS: str
+    GOOGL_SHEET_RATE_ID: str
     model_config = SettingsConfigDict(env_file=".env")
 
 

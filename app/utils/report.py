@@ -1,19 +1,20 @@
 import numpy_financial as npf
 import numpy as np
-
+from app.utils.gcp import read_sheet
 
 def calculate_monthly_payment(
     purchase_price: float,
     down_payment: float,
     interest_rate: float,
-    number_of_months: int,
+    mortgage_number_of_months: int,
 ):
     """
     This function calculate the expected monthly payment
     """
-
+    interest_rate = np.round(interest_rate * 0.01,6)
     principal_borrowed = purchase_price - down_payment
-    monthly_payment = npf.pmt(interest_rate, number_of_months, principal_borrowed)
+    monthly_payment = -npf.pmt(interest_rate, mortgage_number_of_months, principal_borrowed)
+    monthly_payment = np.round(monthly_payment,0)
     return monthly_payment
 
 
@@ -35,43 +36,114 @@ def calculate_dbr(
         dbr = np.round(100 * dbr, 2)
     return dbr
 
-
 def generate_report(
-    purchase_price: float,
-    down_payment: float,
-    interest_rate: float,
-    number_of_months: int,        
-    cumulative_income: dict,
-    cumulative_liabilities: dict,
-    dbr_threshold: float =50,
+    project_info:dict,
+    personal_info:dict,
+    income_info:dict,
+    liabilities_info:dict,
+    mortgage_info:dict,
+    dbr_threshold: float= 50,
 ):
     """
     This function calculate the expected monthly payment
     """
+    # read rate table
+    rate_df = read_sheet()
+
+    # filter residency status
+    residency_status = personal_info.get('residency_status')
+    rate_df = rate_df[rate_df['citizen_state'] == residency_status.upper()]
     
+    # filter employment status
+    employment_status = personal_info.get('employment_status')
+    rate_df = rate_df[rate_df['type_of_employment'] == employment_status.upper()]    
+
+    # filter transaction type
+    transaction_type = project_info.get('transaction_type')
+
+    if transaction_type.upper() == 'First time':
+        rate_df = rate_df[rate_df['type_of_transaction'] == 'PRIMARY PURCHASE']
+    elif transaction_type.upper() == 'Already have a mortgage':
+        rate_df = rate_df[rate_df['type_of_transaction'] == 'BUY A PROPERTY']
+    elif transaction_type.upper() == 'Cash out':
+        rate_df = rate_df[rate_df['type_of_transaction'] == 'CASH OUT PROPERTY']
+    elif transaction_type.upper() == 'Buy out':
+        rate_df = rate_df[rate_df['type_of_transaction'] == 'BUYOUT + EQUITY']
+    elif transaction_type.upper() == 'Mortgage transfer':
+        rate_df = rate_df[rate_df['type_of_transaction'] == 'TRANSFER OF EXISTING MORTGAGE']
+
+    # filter salary transfer
+    salary_transfer = mortgage_info.get('salary_transfer')
+    if salary_transfer == True:
+        rate_df = rate_df[rate_df['type_of_account'] == 'STL']
+    else:
+        rate_df = rate_df[rate_df['type_of_account'] != 'STL']
+
+    # filter mortgage type
+    mortgage_type = mortgage_info.get('mortgage_type')
+    if mortgage_type in ['Conventional','Islamic']:
+        rate_df = rate_df[rate_df['type_of_mortgage'] == mortgage_type.upper()]    
+
+    # filter rate type
+    rate_type = mortgage_info.get('rate_type')
+    if rate_type == 'Fixed':
+        rate_df = rate_df[rate_df['interest_rate_type'] == rate_type.lower()]
+        rate_df['target_rate'] = rate_df['fixed_rate']
+    elif rate_type == 'Variable':
+        rate_df = rate_df[rate_df['interest_rate_type'] == rate_type.lower()]
+        rate_df['target_rate'] = rate_df['eibor_rate']
+    else:
+        rate_df['target_rate'] = rate_df[['eibor_rate','fixed_rate']].min(axis=1)
+    
+    rate_df['target_rate'] = rate_df['target_rate'].astype(float)
+    rate_df = rate_df[rate_df['target_rate'] != 0]
+    best_rates_idx = rate_df.groupby('bank_name')['target_rate'].idxmin()
+    offers_df = rate_df.loc[best_rates_idx]
+    offers_df = offers_df.sort_values(by='target_rate', ascending=True)
+    number_of_offers = len(offers_df)
+    offers_df = offers_df.iloc[:3]
+    interest_rate = offers_df.iloc[0].target_rate
+    bank_max_mortgage_year = offers_df.iloc[0].maximum_length_of_mortgage
+
+    purchase_price = project_info.get('purchase_price')
+    down_payment = project_info.get('down_payment')
+    age = personal_info.get('age')
+
+    # client max mortgage duration
+    client_max_mortgage_year = max(65 - age, 0) 
+    client_max_mortgage_month = float(client_max_mortgage_year) * 12
+    
+    # bank max mortgage duration
+    bank_max_numer_of_months = float(bank_max_mortgage_year) * 12
+    mortgage_number_of_months = min(bank_max_numer_of_months, client_max_mortgage_month)
+
     monthly_payments = calculate_monthly_payment(
         purchase_price, 
         down_payment, 
         interest_rate,
-        number_of_months
-    )
-    
-    dbr = calculate_dbr(monthly_payments, cumulative_income, cumulative_liabilities)
+        mortgage_number_of_months,
+    )    
+
+    dbr = calculate_dbr(monthly_payments, income_info, liabilities_info)
         
     if dbr < dbr_threshold:
-        status = "OK"
+        status = "QUALIFIED"
     else:
-        status = "NOT APPROVED"
+        status = "NOT QUALIFIED"
     try:
         down_payment_pct = np.round(100 * down_payment / purchase_price,2)
     except:
         down_payment_pct = 0
 
+    offers_list = offers_df.to_dict('records')
+
     return {
+        "number_of_offers":number_of_offers,
+        "mortage_lenth_month":mortgage_number_of_months,
+        "best_rate":interest_rate,
         "monthly_payments": monthly_payments,
         "dbr": dbr,
         "down_payment_pct":down_payment_pct,
         "status": status,
+        "offers_list":offers_list
     }
-
-

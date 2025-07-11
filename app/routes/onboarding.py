@@ -17,25 +17,19 @@ def get_report(
 ):
     input_data = data.model_dump()
 
-    interest_rate = 0.07
-
-    # project info
     project_info = input_data.get('project_info')
-    purchase_price =  project_info.get('purchase_price')
-    down_payment = project_info.get('down_payment')
-
-    # personal info
     personal_info = input_data.get('personal_info')
-    age = personal_info.get('age')
-    number_of_months = max(65 - age, 0)
-    cumulative_income = input_data.get('income_info')
-    cumulative_liabilities = input_data.get('liabilities_info')
+    income_info = input_data.get('income_info')
+    liabilities_info = input_data.get('liabilities_info')
+    mortgage_info = input_data.get('mortgage_info')
 
     # generate report
     output_data = generate_report(
-        purchase_price, down_payment,
-        interest_rate, number_of_months,
-        cumulative_income, cumulative_liabilities
+        project_info=project_info,
+        personal_info=personal_info,
+        income_info=income_info,
+        liabilities_info=liabilities_info,
+        mortgage_info=mortgage_info,
     )
 
     return {
