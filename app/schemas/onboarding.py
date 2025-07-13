@@ -4,40 +4,42 @@ from datetime import datetime, date
 from enum import Enum
 
 class ResidencyStatus(str, Enum):
-    uae_resident = "UAE Resident"
-    non_resident = "NON Resident"
-    uae_national = "UAE National"
+    uae_resident = "UAE resident"
+    non_resident = "Non resident"
+    uae_national = "UAE national"
 
 class EmploymentStatus(str, Enum):
-    salaried = "Salary"
-    self_employed = "Self employment"
+    salaried = "Salaried"
+    self_employed = "Self employed"
 
 class EmiratesList(str, Enum):
     abu_dhabi = 'Abu Dhabi'
     dubai = 'Dubai'
-    sharja = 'Sharja'
+    sharjah = 'Sharjah'
     ras_al_khaima = 'Ras Al Khaima'
 
 class TransactionType(str, Enum):
-    first_time = 'First time'
-    already_have_a_mortgage = 'Already have a mortgage'
-    buy_out = 'Buy out'
-    cash_out ='Cash out'
-    mortgage_transfer = 'Mortgage transfer'
+    resale_handover = "Resale handover"
+    buyout = "Buyout"
+    buyout_equity = "Buyout + Equity"
+    equity = "Equity"
+    primary_purchase = "Primary purchase"
 
 class RateType(str, Enum):
     fixed = 'Fixed'
     variable = 'Variable'
-    any = 'Any'
+    best_rate = 'Best rate'
 
 class MortgageType(str, Enum):
     conventional = 'Conventional'
     islamic = 'Islamic'
-    any = 'Any'
+    best_rate = 'Best rate'
 
 class ProjectStatus(str, Enum):
-    property_found = 'Found a property'
-    still_looking = 'Still looking'
+    signed_the_mou = "Signed the MoU"
+    made_an_offer = "Made an offer"
+    viewing_properties = "Viewing properties"
+    still_looking = 'Still looking'    
 
 
 class PersonalInfo(BaseModel):

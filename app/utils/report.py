@@ -65,20 +65,23 @@ def generate_report(
     
     # filter employment status
     employment_status = personal_info.get('employment_status')
-    rate_df = rate_df[rate_df['type_of_employment'] == employment_status.upper()]    
+    if employment_status == 'Salaried':
+        rate_df = rate_df[rate_df['type_of_employment'] == 'SALARY']    
+    elif employment_status == 'Self employed':
+        rate_df = rate_df[rate_df['type_of_employment'] == 'SELF EMPLOYMENT']    
 
     # filter transaction type
     transaction_type = project_info.get('transaction_type')
 
-    if transaction_type.upper() == 'First time':
+    if transaction_type.upper() == 'Primary purchase':
         rate_df = rate_df[rate_df['type_of_transaction'] == 'PRIMARY PURCHASE']
-    elif transaction_type.upper() == 'Already have a mortgage':
+    elif transaction_type.upper() == "Resale handover":
         rate_df = rate_df[rate_df['type_of_transaction'] == 'BUY A PROPERTY']
-    elif transaction_type.upper() == 'Cash out':
-        rate_df = rate_df[rate_df['type_of_transaction'] == 'CASH OUT PROPERTY']
-    elif transaction_type.upper() == 'Buy out':
+    elif transaction_type.upper() == 'Buyout + Equity':
         rate_df = rate_df[rate_df['type_of_transaction'] == 'BUYOUT + EQUITY']
-    elif transaction_type.upper() == 'Mortgage transfer':
+    elif transaction_type.upper() == "Equity":
+        rate_df = rate_df[rate_df['type_of_transaction'] == 'CASH OUT PROPERTY']
+    elif transaction_type.upper() ==  "Buyout":
         rate_df = rate_df[rate_df['type_of_transaction'] == 'TRANSFER OF EXISTING MORTGAGE']
 
     # filter salary transfer
