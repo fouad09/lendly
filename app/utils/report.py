@@ -11,9 +11,13 @@ def calculate_monthly_payment(
     """
     This function calculate the expected monthly payment
     """
-    interest_rate = np.round(interest_rate * 0.01,6)
-    principal_borrowed = purchase_price - down_payment
-    monthly_payment = -npf.pmt(interest_rate, mortgage_number_of_months, principal_borrowed)
+    # monthly rate
+    monthly_interest_rate = (interest_rate * 0.01) / 12
+    monthly_interest_rate = np.round(monthly_interest_rate, 6)
+    
+    # loan amount
+    principal_borrowed = purchase_price - down_payment    
+    monthly_payment = -npf.pmt(monthly_interest_rate, mortgage_number_of_months, principal_borrowed)
     monthly_payment = np.round(monthly_payment,0)
     return monthly_payment
 
@@ -26,9 +30,13 @@ def calculate_dbr(
     """
     This function calculate the client dbr    
     """
+
     total_income = sum([v for k,v in cumulative_income.items()])
-    total_liabilities = sum([v for k,v in cumulative_liabilities.items()])
+    
+    cumulative_liabilities.pop('credit_cards')
+    total_liabilities = sum([v for v in cumulative_liabilities.values()])
     total_debt = total_liabilities + monthly_payment
+
     if (total_income == 0):
         dbr = 100
     else:
@@ -88,21 +96,21 @@ def generate_report(
     rate_type = mortgage_info.get('rate_type')
     if rate_type == 'Fixed':
         rate_df = rate_df[rate_df['interest_rate_type'] == rate_type.lower()]
-        rate_df['target_rate'] = rate_df['fixed_rate']
+        rate_df['best_rate'] = rate_df['fixed_rate']
     elif rate_type == 'Variable':
         rate_df = rate_df[rate_df['interest_rate_type'] == rate_type.lower()]
-        rate_df['target_rate'] = rate_df['eibor_rate']
+        rate_df['best_rate'] = rate_df['follow_on_rate']
     else:
-        rate_df['target_rate'] = rate_df[['eibor_rate','fixed_rate']].min(axis=1)
+        rate_df['best_rate'] = rate_df[['follow_on_rate','fixed_rate']].min(axis=1)
     
-    rate_df['target_rate'] = rate_df['target_rate'].astype(float)
-    rate_df = rate_df[rate_df['target_rate'] != 0]
-    best_rates_idx = rate_df.groupby('bank_name')['target_rate'].idxmin()
+    rate_df['best_rate'] = rate_df['best_rate'].astype(float)
+    rate_df = rate_df[rate_df['best_rate'] != 0]
+    best_rates_idx = rate_df.groupby('bank_name')['best_rate'].idxmin()
     offers_df = rate_df.loc[best_rates_idx]
-    offers_df = offers_df.sort_values(by='target_rate', ascending=True)
+    offers_df = offers_df.sort_values(by='best_rate', ascending=True)
     number_of_offers = len(offers_df)
     offers_df = offers_df.iloc[:3]
-    interest_rate = offers_df.iloc[0].target_rate
+    interest_rate = offers_df.iloc[0].best_rate
     bank_max_mortgage_year = offers_df.iloc[0].maximum_length_of_mortgage
 
     purchase_price = project_info.get('purchase_price')

@@ -44,8 +44,8 @@ class PersonalInfo(BaseModel):
 
     residency_status: ResidencyStatus
     employment_status: EmploymentStatus
-    applying_alone: bool # yes, no
-    age: int = Field(..., ge=18, le=65, description="Age") 
+    applying_alone: bool
+    age: int = Field(..., ge=21, le=65, description="Age") 
 
 class IncomeInfo(BaseModel):
 
@@ -56,10 +56,8 @@ class IncomeInfo(BaseModel):
 
 class LiabilitiesInfo(BaseModel):
 
-    credit_card_1: float = Field(..., ge=0, description="Credit card 1 amount limit")
-    credit_card_2: float = Field(..., ge=0, description="Credit card 2 amount limit")
-    credit_card_3: float = Field(..., ge=0, description="Credit card 3 amount limit")
-    credit_card_4: float = Field(..., ge=0, description="Credit card 4 amount limit")
+    credit_cards: float = Field(..., ge=0, description="Number of Credit cards")
+    credit_cards_limit: float = Field(..., ge=0, description="Credit cards amount limit")
     auto_loan: float = Field(..., ge=0, description="Auto loan remaining amount")
     personal_loan: float = Field(..., ge=0, description="Personal loan remaining amount")
 
