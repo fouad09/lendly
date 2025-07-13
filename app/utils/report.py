@@ -33,8 +33,9 @@ def calculate_dbr(
 
     total_income = sum([v for k,v in cumulative_income.items()])
     
-    cumulative_liabilities.pop('credit_cards')
+    credit_cards = cumulative_liabilities.pop('credit_cards')
     total_liabilities = sum([v for v in cumulative_liabilities.values()])
+    cumulative_liabilities['credit_cards'] = credit_cards
     total_debt = total_liabilities + monthly_payment
 
     if (total_income == 0):
