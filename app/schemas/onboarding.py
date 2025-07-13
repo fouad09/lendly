@@ -3,6 +3,10 @@ from typing import Optional
 from datetime import datetime, date
 from enum import Enum
 
+class ApplicationStatus(str, Enum):
+    alone = "Alone"
+    joint = "Joint"
+
 class ResidencyStatus(str, Enum):
     uae_resident = "UAE resident"
     non_resident = "Non resident"
@@ -46,7 +50,7 @@ class PersonalInfo(BaseModel):
 
     residency_status: ResidencyStatus
     employment_status: EmploymentStatus
-    applying_alone: bool
+    application_status: ApplicationStatus
     age: int = Field(..., ge=21, le=65, description="Age") 
 
 class IncomeInfo(BaseModel):
