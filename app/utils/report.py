@@ -86,7 +86,7 @@ def generate_report(
 
     # filter salary transfer
     salary_transfer = mortgage_info.get('salary_transfer')
-    if salary_transfer == True:
+    if salary_transfer == "Yes":
         rate_df = rate_df[rate_df['type_of_account'] == 'STL']
     else:
         rate_df = rate_df[rate_df['type_of_account'] != 'STL']

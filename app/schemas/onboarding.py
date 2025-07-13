@@ -45,6 +45,9 @@ class ProjectStatus(str, Enum):
     viewing_properties = "Viewing properties"
     still_looking = 'Still looking'    
 
+class SalaryTransfer(str, Enum):
+    yes = "Yes"
+    no = "No"
 
 class PersonalInfo(BaseModel):
 
@@ -80,7 +83,7 @@ class MortgageInfo(BaseModel):
 
     mortgage_type: MortgageType
     rate_type: RateType 
-    salary_transfer: bool
+    salary_transfer: SalaryTransfer
 
 
 class OnboardingForm(BaseModel):
