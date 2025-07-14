@@ -166,7 +166,7 @@ def generate_report(
         # dbr
         dbr = calculate_dbr(monthly_payments, income_info, liabilities_info)
         
-        offer['monthly_payments'] = monthly_payments
+        offer['monthly_payment'] = monthly_payments
         offer['dbr'] = dbr
 
     return {
