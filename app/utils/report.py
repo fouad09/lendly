@@ -129,41 +129,45 @@ def generate_report(
     mortgage_number_of_months = min(bank_max_numer_of_months, client_max_mortgage_month)
     mortgage_number_of_years = np.floor(mortgage_number_of_months / 12)
 
-
     # principale borrowed
     principal_borrowed = purchase_price - down_payment  
-    
+
     # loan to value
     loan_to_value =  np.round(down_payment / purchase_price,0)
-    
-    monthly_payments = calculate_monthly_payment(
-        principal_borrowed, 
-        interest_rate,
-        mortgage_number_of_months,
-    )    
 
-    dbr = calculate_dbr(monthly_payments, income_info, liabilities_info)
-        
-    if dbr < dbr_threshold:
-        status = "QUALIFIED"
-    else:
-        status = "NOT QUALIFIED"
+    # down payment (%)
     try:
         down_payment_pct = np.round(100 * down_payment / purchase_price,2)
     except:
         down_payment_pct = 0
-
-    # offers
-    offers_list = offers_df.to_dict('records')
 
     # documents
     document_dict = generate_requirements(
         residency_status=residency_status,
         employment_status=employment_status,
     )
+
     documents_required = document_dict.get('requirements')
     eligibility = document_dict.get('eligibility')
 
+    # offers
+    offers_list = offers_df.to_dict('records')
+    
+    for offer in offers_list:
+        best_rate = offer.get('best_rate')
+
+        # monthly payments
+        monthly_payments = calculate_monthly_payment(
+            principal_borrowed, 
+            best_rate,
+            mortgage_number_of_months,
+        )
+
+        # dbr
+        dbr = calculate_dbr(monthly_payments, income_info, liabilities_info)
+        
+        offer['monthly_payments'] = monthly_payments
+        offer['dbr'] = dbr
 
     return {
         "number_of_offers":number_of_offers,
@@ -171,11 +175,7 @@ def generate_report(
         "mortage_lenth_year":mortgage_number_of_years,
         "principal_borrowed":principal_borrowed,
         "loan_to_value":loan_to_value,
-        "best_rate":interest_rate,
-        "monthly_payments": monthly_payments,
-        "dbr": dbr,
         "down_payment_pct":down_payment_pct,
-        "status": status,
         "documents_required":documents_required,
         "eligibility":eligibility,
         "offers_list":offers_list
