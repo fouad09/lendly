@@ -14,16 +14,15 @@ GOOGLE_APPLICATION_CREDENTIALS_BASE_64 = settings.get('GOOGLE_APPLICATION_CREDEN
 GOOGLE_APPLICATION_CREDENTIALS = json.loads(base64.b64decode(GOOGLE_APPLICATION_CREDENTIALS_BASE_64))
 GOOGL_SHEET_RATE_ID = settings.get('GOOGL_SHEET_RATE_ID')
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-RANGE_NAME = 'Sheet1!A:AR' 
 
 
-def read_sheet():
+def read_rates():
     credentials = service_account.Credentials.from_service_account_info(
         GOOGLE_APPLICATION_CREDENTIALS, scopes=SCOPES
     )
     service = build('sheets', 'v4', credentials=credentials)    
     sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=GOOGL_SHEET_RATE_ID, range=RANGE_NAME).execute()
+    result = sheet.values().get(spreadsheetId=GOOGL_SHEET_RATE_ID, range='Sheet1!A:AR').execute()
     values = result.get('values', [])
     df = pd.DataFrame(values[1:], columns=values[0])
     return df

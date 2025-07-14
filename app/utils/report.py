@@ -1,10 +1,10 @@
 import numpy_financial as npf
 import numpy as np
-from app.utils.gcp import read_sheet
+from app.utils.gcp import read_rates
+from app.utils.loan_requirements import generate_requirements
 
 def calculate_monthly_payment(
-    purchase_price: float,
-    down_payment: float,
+    principal_borrowed: float,
     interest_rate: float,
     mortgage_number_of_months: int,
 ):
@@ -15,8 +15,7 @@ def calculate_monthly_payment(
     monthly_interest_rate = (interest_rate * 0.01) / 12
     monthly_interest_rate = np.round(monthly_interest_rate, 6)
     
-    # loan amount
-    principal_borrowed = purchase_price - down_payment    
+    # monthly payment
     monthly_payment = -npf.pmt(monthly_interest_rate, mortgage_number_of_months, principal_borrowed)
     monthly_payment = np.round(monthly_payment,0)
     return monthly_payment
@@ -57,7 +56,7 @@ def generate_report(
     This function calculate the expected monthly payment
     """
     # read rate table
-    rate_df = read_sheet()
+    rate_df = read_rates()
 
     # filter residency status
     residency_status = personal_info.get('residency_status')
@@ -128,10 +127,17 @@ def generate_report(
     # bank max mortgage duration
     bank_max_numer_of_months = float(bank_max_mortgage_year) * 12
     mortgage_number_of_months = min(bank_max_numer_of_months, client_max_mortgage_month)
+    mortgage_number_of_years = np.floor(mortgage_number_of_months / 12)
 
+
+    # principale borrowed
+    principal_borrowed = purchase_price - down_payment  
+    
+    # loan to value
+    loan_to_value =  np.round(down_payment / purchase_price,0)
+    
     monthly_payments = calculate_monthly_payment(
-        purchase_price, 
-        down_payment, 
+        principal_borrowed, 
         interest_rate,
         mortgage_number_of_months,
     )    
@@ -147,15 +153,30 @@ def generate_report(
     except:
         down_payment_pct = 0
 
+    # offers
     offers_list = offers_df.to_dict('records')
+
+    # documents
+    document_dict = generate_requirements(
+        residency_status=residency_status,
+        employment_status=employment_status,
+    )
+    documents_required = document_dict.get('requirements')
+    eligibility = document_dict.get('eligibility')
+
 
     return {
         "number_of_offers":number_of_offers,
         "mortage_lenth_month":mortgage_number_of_months,
+        "mortage_lenth_year":mortgage_number_of_years,
+        "principal_borrowed":principal_borrowed,
+        "loan_to_value":loan_to_value,
         "best_rate":interest_rate,
         "monthly_payments": monthly_payments,
         "dbr": dbr,
         "down_payment_pct":down_payment_pct,
         "status": status,
+        "documents_required":documents_required,
+        "eligibility":eligibility,
         "offers_list":offers_list
     }
