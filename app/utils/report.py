@@ -167,10 +167,32 @@ def generate_report(
         dbr = calculate_dbr(monthly_payments, income_info, liabilities_info)
         
         offer['monthly_payment'] = monthly_payments
-        offer['mortgage_processing_fee_as_amount'] = principal_borrowed * offer.get('mortgage_processing_fee_as_amount',0) * 0.01
-        offer['property_insurance_monthly_payment'] = principal_borrowed * offer.get('property_insurance',0) * 0.01
-        offer['life_insurance_monthly_payment'] = principal_borrowed * offer.get('life_insurance',0) * 0.01
+
+        # mortgage processing fees
+        mortgage_processing_fee_as_amount = offer.get('mortgage_processing_fee_as_amount')
+        if mortgage_processing_fee_as_amount != '':
+            offer['mortgage_processing_fee_as_amount'] = np.ceil(principal_borrowed * float(mortgage_processing_fee_as_amount) * 0.01)
+        else:
+            offer['mortgage_processing_fee_as_amount'] = 0 
+
+        # property insurance
+        property_insurance = offer.get('property_insurance')
+        if property_insurance != '':
+            offer['property_insurance_monthly_payment'] = np.ceil(principal_borrowed * float(property_insurance) * 0.01)
+        else:
+            offer['property_insurance_monthly_payment'] = 0     
+
+        # life insurance
+        life_insurance = offer.get('life_insurance')
+        if life_insurance != '':
+            offer['life_insurance_monthly_payment'] = np.ceil(principal_borrowed * float(life_insurance) * 0.01)
+        else:
+            offer['life_insurance_monthly_payment'] = 0
+
+        # loan to value
         offer['loan_to_value_ratio'] = loan_to_value
+
+        # dbr
         offer['dbr'] = dbr
 
     return {
