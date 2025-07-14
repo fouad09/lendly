@@ -133,7 +133,7 @@ def generate_report(
     principal_borrowed = purchase_price - down_payment  
 
     # loan to value
-    loan_to_value =  np.round(down_payment / purchase_price,0)
+    loan_to_value =  np.round(100 *down_payment / purchase_price,0)
 
     # down payment (%)
     try:
