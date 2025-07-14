@@ -167,6 +167,10 @@ def generate_report(
         dbr = calculate_dbr(monthly_payments, income_info, liabilities_info)
         
         offer['monthly_payment'] = monthly_payments
+        offer['mortgage_processing_fee_as_amount'] = principal_borrowed * offer.get('mortgage_processing_fee_as_amount',0) * 0.01
+        offer['property_insurance_monthly_payment'] = principal_borrowed * offer.get('property_insurance',0) * 0.01
+        offer['life_insurance_monthly_payment'] = principal_borrowed * offer.get('life_insurance',0) * 0.01
+        offer['loan_to_value_ratio'] = loan_to_value
         offer['dbr'] = dbr
 
     return {
