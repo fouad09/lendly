@@ -23,7 +23,7 @@ def generate_requirements(residency_status: str, employment_status:str , lvt=60)
                             "Min of 3 to 6 months working in the same company",
                             ]
         }
-    elif (residency_status == ['UAE resident','UAE national']) and (employment_status == 'Self employed') and (lvt == 60):
+    elif (residency_status in ['UAE resident','UAE national']) and (employment_status == 'Self employed') and (lvt == 60):
         document_dict = {
             "requirements":[
                         "Passport",
@@ -46,7 +46,8 @@ def generate_requirements(residency_status: str, employment_status:str , lvt=60)
                             "Min of 6 months of activity for the business",
                         ]
         }   
-    elif (residency_status == 'UAE resident') and (employment_status == 'Self employed') and (lvt == 80):
+
+    elif (residency_status in ['UAE resident','UAE national']) and (employment_status == 'Self employed') and (lvt == 80):
         document_dict = {
             "requirements":[
                             "Passport",
