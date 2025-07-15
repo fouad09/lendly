@@ -133,7 +133,7 @@ def generate_report(
     principal_borrowed = purchase_price - down_payment  
 
     # loan to value
-    loan_to_value =  np.round(100 *down_payment / purchase_price,0)
+    loan_to_value =  np.round(100 * principal_borrowed / purchase_price,0)
 
     # down payment (%)
     try:
@@ -178,7 +178,7 @@ def generate_report(
         # property insurance
         property_insurance = offer.get('property_insurance')
         if property_insurance != '':
-            offer['property_insurance_monthly_payment'] = np.ceil(principal_borrowed * float(property_insurance) * 0.01)
+            offer['property_insurance_monthly_payment'] = np.ceil(principal_borrowed * float(property_insurance) * 0.01 / 12) # monthly
         else:
             offer['property_insurance_monthly_payment'] = 0     
 
