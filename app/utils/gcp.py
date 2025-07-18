@@ -22,10 +22,32 @@ def read_rates():
     )
     service = build('sheets', 'v4', credentials=credentials)    
     sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=GOOGL_SHEET_RATE_ID, range='Sheet1!A:AR').execute()
-    values = result.get('values', [])
-    df = pd.DataFrame(values[1:], columns=values[0])
+    result = sheet.values().get(spreadsheetId=GOOGL_SHEET_RATE_ID, range='RATES!A:AQ').execute()
+    try:
+        values = result.get('values', [])
+        df = pd.DataFrame(values[1:], columns=values[0])
+    except:
+        df = pd.DataFrame()
     return df
+
+def read_constraints():
+    credentials = service_account.Credentials.from_service_account_info(
+        GOOGLE_APPLICATION_CREDENTIALS, scopes=SCOPES
+    )
+    service = build('sheets', 'v4', credentials=credentials)    
+    sheet = service.spreadsheets()
+    result = sheet.values().get(spreadsheetId=GOOGL_SHEET_RATE_ID, range='CONSTRAINTS!A:F').execute()
+    values = result.get('values', [])
+    try:
+        df = pd.DataFrame(values[1:], columns=values[0])
+        df = df.set_index('Bank')
+        df = df.replace({',': ''}, regex=True)
+        df = df.apply(pd.to_numeric)    
+        df = df.fillna(0)        
+    except:
+        df = pd.DataFrame()
+    return df
+
 
 def upload_documents(
     file: UploadFile,

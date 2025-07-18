@@ -42,7 +42,6 @@ def generate_requirements(residency_status: str, employment_status:str , lvt=60)
             "eligibility":[
                             "Average 40,000 AED / Month",
                             "Landline number",
-                            "Office address",
                             "Min of 6 months of activity for the business",
                         ]
         }   
@@ -72,7 +71,6 @@ def generate_requirements(residency_status: str, employment_status:str , lvt=60)
             "eligibility":[
                             "Average 40,000 AED / Month",
                             "Landline number",
-                            "Office address",
                             "Min of 6 months of activity for the business",
                         ]
         }                
@@ -89,6 +87,7 @@ def generate_requirements(residency_status: str, employment_status:str , lvt=60)
                         ],
             "eligibility":[
                            "Avergage of 25,000 AED / Month for the past 3 months",
+                           "Or 15,000 AED to 25,000 AED / Month for the past 3 months",
                         ]
         }           
     elif (residency_status == 'Non resident') and (employment_status == 'Self employed'):        
@@ -103,7 +102,7 @@ def generate_requirements(residency_status: str, employment_status:str , lvt=60)
                             "Shareholders' certificate",
                             "Salary certificate (Less than 1 month old)",
                             "Personal bank statements (For the past 6 months)",
-                            "Perosnal credit bureau report",
+                            "Personal credit bureau report",
                         ],
             "eligibility":[
                             "Avergage of 25,000 AED & 40,000 AED / Month for the past 3 months",

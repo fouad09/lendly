@@ -27,7 +27,7 @@ class TransactionType(str, Enum):
     buyout = "Buyout"
     buyout_equity = "Buyout + Equity"
     equity = "Equity"
-    primary_purchase = "Primary purchase"
+    # primary_purchase = "Primary purchase"
 
 class RateType(str, Enum):
     fixed = 'Fixed'
@@ -77,6 +77,7 @@ class ProjectInfo(BaseModel):
     transaction_type: TransactionType
     purchase_price: float = Field(..., ge=400000, le=20000000, description="Property value") 
     down_payment: float = Field(..., ge=100000, description="Down payment") 
+    mortage_duration: float = Field(..., ge=1,le=25, description="Down payment") 
 
 
 class MortgageInfo(BaseModel):

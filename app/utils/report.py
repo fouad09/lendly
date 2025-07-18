@@ -1,6 +1,9 @@
 import numpy_financial as npf
 import numpy as np
-from app.utils.gcp import read_rates
+from app.utils.gcp import (
+    read_rates,
+    read_constraints
+)
 from app.utils.loan_requirements import generate_requirements
 
 def calculate_monthly_payment(
@@ -55,13 +58,37 @@ def generate_report(
     """
     This function calculate the expected monthly payment
     """
+    
+    # principale borrowed
+    purchase_price = project_info.get('purchase_price')
+    down_payment = project_info.get('down_payment')
+    monthly_salary = income_info.get('monthly_salary')
+    principal_borrowed = purchase_price - down_payment  
+
+    # read constraints
+    constraints_df = read_constraints()
+
+    # mask loans
+    mask_loan = (principal_borrowed >= constraints_df['min_loan']) & (principal_borrowed < constraints_df['max_loan'])
+    
+    # mask salary 
+    mask_salary = (monthly_salary >= constraints_df['min_salary'])
+    
+    # filter banks
+    mask = mask_loan & mask_salary
+    banks_list = constraints_df.loc[mask].index.tolist()
+    
     # read rate table
     rate_df = read_rates()
+
+    # filter banks
+    rate_df = rate_df[rate_df.bank_name.isin(banks_list)]
+
 
     # filter residency status
     residency_status = personal_info.get('residency_status')
     rate_df = rate_df[rate_df['citizen_state'] == residency_status.upper()]
-    
+
     # filter employment status
     employment_status = personal_info.get('employment_status')
     if employment_status == 'Salaried':
@@ -72,15 +99,13 @@ def generate_report(
     # filter transaction type
     transaction_type = project_info.get('transaction_type')
 
-    if transaction_type.upper() == 'Primary purchase':
+    if transaction_type in ["Resale handover","Primary purchase"]:
         rate_df = rate_df[rate_df['type_of_transaction'] == 'PRIMARY PURCHASE']
-    elif transaction_type.upper() == "Resale handover":
-        rate_df = rate_df[rate_df['type_of_transaction'] == 'BUY A PROPERTY']
-    elif transaction_type.upper() == 'Buyout + Equity':
+    elif transaction_type == 'Buyout + Equity':
         rate_df = rate_df[rate_df['type_of_transaction'] == 'BUYOUT + EQUITY']
-    elif transaction_type.upper() == "Equity":
+    elif transaction_type == "Equity":
         rate_df = rate_df[rate_df['type_of_transaction'] == 'CASH OUT PROPERTY']
-    elif transaction_type.upper() ==  "Buyout":
+    elif transaction_type ==  "Buyout":
         rate_df = rate_df[rate_df['type_of_transaction'] == 'TRANSFER OF EXISTING MORTGAGE']
 
     # filter salary transfer
@@ -108,29 +133,30 @@ def generate_report(
     
     rate_df['best_rate'] = rate_df['best_rate'].astype(float)
     rate_df = rate_df[rate_df['best_rate'] != 0]
+    
     best_rates_idx = rate_df.groupby('bank_name')['best_rate'].idxmin()
     offers_df = rate_df.loc[best_rates_idx]
     offers_df = offers_df.sort_values(by='best_rate', ascending=True)
+    
     number_of_offers = len(offers_df)
+    if number_of_offers == 0:
+        return {}
+
     offers_df = offers_df.iloc[:3]
-    interest_rate = offers_df.iloc[0].best_rate
     bank_max_mortgage_year = offers_df.iloc[0].maximum_length_of_mortgage
 
-    purchase_price = project_info.get('purchase_price')
-    down_payment = project_info.get('down_payment')
     age = personal_info.get('age')
 
     # client max mortgage duration
     client_max_mortgage_year = max(65 - age, 0) 
-    client_max_mortgage_month = float(client_max_mortgage_year) * 12
+    client_max_mortgage_months = float(client_max_mortgage_year) * 12
     
     # bank max mortgage duration
+    mortage_duration_year = project_info.get('mortage_duration')
+    mortage_duration_months = mortage_duration_year * 12
     bank_max_numer_of_months = float(bank_max_mortgage_year) * 12
-    mortgage_number_of_months = min(bank_max_numer_of_months, client_max_mortgage_month)
+    mortgage_number_of_months = min(bank_max_numer_of_months, client_max_mortgage_months, mortage_duration_months)
     mortgage_number_of_years = np.floor(mortgage_number_of_months / 12)
-
-    # principale borrowed
-    principal_borrowed = purchase_price - down_payment  
 
     # loan to value
     loan_to_value =  np.round(100 * principal_borrowed / purchase_price,0)
@@ -169,11 +195,11 @@ def generate_report(
         offer['monthly_payment'] = monthly_payments
 
         # mortgage processing fees
-        mortgage_processing_fee_as_amount = offer.get('mortgage_processing_fee_as_amount')
-        if mortgage_processing_fee_as_amount != '':
-            offer['mortgage_processing_fee_as_amount'] = np.ceil(principal_borrowed * float(mortgage_processing_fee_as_amount) * 0.01)
+        mortgage_processing_fee = offer.get('mortgage_processing_fee')
+        if mortgage_processing_fee != '':
+            offer['mortgage_processing_fee_as_amount'] = np.ceil(principal_borrowed * float(mortgage_processing_fee) * 0.01)
         else:
-            offer['mortgage_processing_fee_as_amount'] = 0 
+            offer['mortgage_processing_fee'] = 0 
 
         # property insurance
         property_insurance = offer.get('property_insurance')
