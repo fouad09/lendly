@@ -27,18 +27,13 @@ def calculate_monthly_payment(
 
 def calculate_dbr(
     monthly_payment: float,
-    cumulative_income: dict,
-    cumulative_liabilities: dict,
+    total_income: float,
+    total_liabilities: float,
 ):
     """
     This function calculate the client dbr    
     """
 
-    total_income = sum([v for k,v in cumulative_income.items()])
-    
-    credit_cards = cumulative_liabilities.pop('credit_cards')
-    total_liabilities = sum([v for v in cumulative_liabilities.values()])
-    cumulative_liabilities['credit_cards'] = credit_cards
     total_debt = total_liabilities + monthly_payment
 
     if (total_income == 0):
@@ -46,7 +41,7 @@ def calculate_dbr(
     else:
         dbr = total_debt / total_income
         dbr = np.round(100 * dbr, 2)
-    return dbr
+    return dbr, total_income, total_liabilities
 
 def calulate_other_fees(purchase_price: float, principal_borrowed: float, fees_dict: dict):
     
@@ -88,6 +83,10 @@ def generate_report(
     emirate = project_info.get('property_location_emirates')
     monthly_salary = income_info.get('monthly_salary')
     principal_borrowed = purchase_price - down_payment  
+
+    # income & liabilities
+    total_income = sum([v for k,v in income_info.items()])
+    total_liabilities = sum([v for k,v in liabilities_info.items() if k != 'credit_cards' ])
 
     # read constraints
     constraints_df = read_constraints()
@@ -219,7 +218,7 @@ def generate_report(
         )
 
         # dbr
-        dbr = calculate_dbr(monthly_payments, income_info, liabilities_info)
+        dbr = calculate_dbr(monthly_payments, total_income, total_liabilities)
         
         offer['monthly_payment'] = monthly_payments
 
