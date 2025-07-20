@@ -66,8 +66,9 @@ class LiabilitiesInfo(BaseModel):
 
     credit_cards: int = Field(..., ge=0, description="Number of Credit cards")
     credit_cards_limit: float = Field(..., ge=0, description="Credit cards amount limit")
-    auto_loan: float = Field(..., ge=0, description="Auto loan remaining amount")
-    personal_loan: float = Field(..., ge=0, description="Personal loan remaining amount")
+    auto_loan: float = Field(..., ge=0, description="Auto loan monthly payment")
+    personal_loan: float = Field(..., ge=0, description="Personal loan monthly payment")
+    existing_mortgage: float = Field(..., ge=0, description="Existing mortgage monthly payment")
 
 class ProjectInfo(BaseModel):
 
