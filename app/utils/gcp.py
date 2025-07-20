@@ -40,13 +40,33 @@ def read_constraints():
     values = result.get('values', [])
     try:
         df = pd.DataFrame(values[1:], columns=values[0])
-        df = df.set_index('Bank')
+        df = df.set_index('bank')
         df = df.replace({',': ''}, regex=True)
         df = df.apply(pd.to_numeric)    
-        df = df.fillna(0)        
+        df = df.fillna(0)     
     except:
         df = pd.DataFrame()
     return df
+
+def read_fees():
+    credentials = service_account.Credentials.from_service_account_info(
+        GOOGLE_APPLICATION_CREDENTIALS, scopes=SCOPES
+    )
+    service = build('sheets', 'v4', credentials=credentials)    
+    sheet = service.spreadsheets()
+    result = sheet.values().get(spreadsheetId=GOOGL_SHEET_RATE_ID, range='FEES!A:H').execute()
+    values = result.get('values', [])
+    try:
+        df = pd.DataFrame(values[1:], columns=values[0])
+        df = df.set_index('emirate')
+        df = df.replace({',': '','%':''}, regex=True)
+        df = df.apply(pd.to_numeric)    
+        df = df.fillna(0)      
+        pct_columns = df.columns[df.columns.str.contains('_pct')]
+        df[pct_columns] *= 0.01    
+    except:
+        df = pd.DataFrame()
+    return df    
 
 
 def upload_documents(

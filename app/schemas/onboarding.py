@@ -19,8 +19,7 @@ class EmploymentStatus(str, Enum):
 class EmiratesList(str, Enum):
     abu_dhabi = 'Abu Dhabi'
     dubai = 'Dubai'
-    sharjah = 'Sharjah'
-    ras_al_khaima = 'Ras Al Khaima'
+    others = 'Others'
 
 class TransactionType(str, Enum):
     resale_handover = "Resale handover"
@@ -77,13 +76,13 @@ class ProjectInfo(BaseModel):
     transaction_type: TransactionType
     purchase_price: float = Field(..., ge=400000, le=20000000, description="Property value") 
     down_payment: float = Field(..., ge=100000, description="Down payment") 
-    mortage_duration: float = Field(..., ge=1,le=25, description="Down payment") 
 
 
 class MortgageInfo(BaseModel):
 
     mortgage_type: MortgageType
     rate_type: RateType 
+    mortgage_duration: float = Field(..., ge=1,le=25, description="Down payment") 
     salary_transfer: SalaryTransfer
 
 

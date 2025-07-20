@@ -2,7 +2,8 @@ import numpy_financial as npf
 import numpy as np
 from app.utils.gcp import (
     read_rates,
-    read_constraints
+    read_constraints,
+    read_fees
 )
 from app.utils.loan_requirements import generate_requirements
 
@@ -47,6 +48,28 @@ def calculate_dbr(
         dbr = np.round(100 * dbr, 2)
     return dbr
 
+def calulate_other_fees(purchase_price: float, principal_borrowed: float, fees_dict: dict):
+    
+    # property transfer fees
+    transfer_fees_minimum_amount = fees_dict.get('transfer_fees_minimum_amount')
+    transfer_fees_pct = fees_dict.get('transfer_fees_pct')
+    transfer_fees = transfer_fees_minimum_amount + (purchase_price * transfer_fees_pct)
+    fees_dict['transfer_fees'] = transfer_fees
+
+    # agency commission
+    vat_pct = fees_dict.get('vat_pct')
+    agency_commision_fees_pct = fees_dict.get('agency_commision_fees_pct')
+    agency_fees = (purchase_price * agency_commision_fees_pct) * (1 + vat_pct)
+    fees_dict['agency_fees'] = agency_fees
+
+    # mortgage registration_fees
+    mortgage_registration_fees_pct = fees_dict.get('mortgage_registration_fees_pct')
+    mortgage_registration_minimum_amount = fees_dict.get('mortgage_registration_minimum_amount')
+    mortgage_registration_fees = (principal_borrowed * mortgage_registration_fees_pct) + mortgage_registration_minimum_amount
+    fees_dict['mortgage_registration_fees'] = mortgage_registration_fees
+
+    return fees_dict
+
 def generate_report(
     project_info:dict,
     personal_info:dict,
@@ -62,11 +85,17 @@ def generate_report(
     # principale borrowed
     purchase_price = project_info.get('purchase_price')
     down_payment = project_info.get('down_payment')
+    emirate = project_info.get('property_location_emirates')
     monthly_salary = income_info.get('monthly_salary')
     principal_borrowed = purchase_price - down_payment  
 
     # read constraints
     constraints_df = read_constraints()
+
+    # read fees
+    fees_df = read_fees()
+    fees_dict = fees_df.loc[emirate].to_dict()
+    fees_dict = calulate_other_fees(purchase_price, principal_borrowed, fees_dict)
 
     # mask loans
     mask_loan = (principal_borrowed >= constraints_df['min_loan']) & (principal_borrowed < constraints_df['max_loan'])
@@ -152,7 +181,7 @@ def generate_report(
     client_max_mortgage_months = float(client_max_mortgage_year) * 12
     
     # bank max mortgage duration
-    mortage_duration_year = project_info.get('mortage_duration')
+    mortage_duration_year = mortgage_info.get('mortgage_duration')
     mortage_duration_months = mortage_duration_year * 12
     bank_max_numer_of_months = float(bank_max_mortgage_year) * 12
     mortgage_number_of_months = min(bank_max_numer_of_months, client_max_mortgage_months, mortage_duration_months)
@@ -178,7 +207,7 @@ def generate_report(
 
     # offers
     offers_list = offers_df.to_dict('records')
-    
+
     for offer in offers_list:
         best_rate = offer.get('best_rate')
 
@@ -220,6 +249,10 @@ def generate_report(
 
         # dbr
         offer['dbr'] = dbr
+
+        # other fees
+        for k,v in fees_dict.items():
+            offer[k] = v
 
     return {
         "number_of_offers":number_of_offers,
