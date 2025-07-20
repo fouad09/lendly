@@ -126,7 +126,7 @@ def generate_report(
     # filter transaction type
     transaction_type = project_info.get('transaction_type')
 
-    if transaction_type in ["Resale handover","Primary purchase"]:
+    if transaction_type in ["Resale/Resale handover","Primary purchase"]:
         rate_df = rate_df[rate_df['type_of_transaction'] == 'PRIMARY PURCHASE']
     elif transaction_type == 'Buyout + Equity':
         rate_df = rate_df[rate_df['type_of_transaction'] == 'BUYOUT + EQUITY']

@@ -22,11 +22,10 @@ class EmiratesList(str, Enum):
     others = 'Others'
 
 class TransactionType(str, Enum):
-    resale_handover = "Resale handover"
+    resale_handover = "Resale/Resale handover"
     buyout = "Buyout"
     buyout_equity = "Buyout + Equity"
     equity = "Equity"
-    # primary_purchase = "Primary purchase"
 
 class RateType(str, Enum):
     fixed = 'Fixed'
@@ -39,10 +38,9 @@ class MortgageType(str, Enum):
     best_rate = 'Best rate'
 
 class ProjectStatus(str, Enum):
-    signed_the_mou = "Signed the MoU"
+    mou_signed = "MoU signed"
     made_an_offer = "Made an offer"
-    viewing_properties = "Viewing properties"
-    still_looking = 'Still looking'    
+    shopping = "Shopping"
 
 class SalaryTransfer(str, Enum):
     yes = "Yes"
