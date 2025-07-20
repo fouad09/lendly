@@ -112,7 +112,6 @@ def generate_report(
     # filter banks
     rate_df = rate_df[rate_df.bank_name.isin(banks_list)]
 
-
     # filter residency status
     residency_status = personal_info.get('residency_status')
     rate_df = rate_df[rate_df['citizen_state'] == residency_status.upper()]
@@ -258,6 +257,8 @@ def generate_report(
         "mortage_lenth_month":mortgage_number_of_months,
         "mortage_lenth_year":mortgage_number_of_years,
         "principal_borrowed":principal_borrowed,
+        "total_income":total_income,
+        "total_liabilities":total_liabilities,
         "loan_to_value":loan_to_value,
         "down_payment_pct":down_payment_pct,
         "documents_required":documents_required,
