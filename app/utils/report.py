@@ -202,10 +202,10 @@ def generate_report(
     )
 
     documents_required = document_dict.get('requirements')
-    documents_required = [{f"document_{i+1}":documents_required[i]} for i in range(0, len(documents_required))]
+    documents_required = [{f"document":d} for d in documents_required]
     
     eligibility = document_dict.get('eligibility')
-    eligibility = [{f"eligibility_{i+1}":eligibility[i]} for i in range(0, len(eligibility))]
+    eligibility = [{f"eligibility":e} for e in eligibility]
 
     # offers
     offers_list = offers_df.to_dict('records')
