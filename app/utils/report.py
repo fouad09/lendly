@@ -265,7 +265,7 @@ def generate_report(
         "total_liabilities":total_liabilities,
         "loan_to_value":loan_to_value,
         "down_payment_pct":down_payment_pct,
-        "documents_required":documents_required,
-        "eligibility":eligibility,
+        "documents_required_list":documents_required,
+        "eligibility_list":eligibility,
         "offers_list":offers_list
     }
