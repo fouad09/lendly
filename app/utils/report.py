@@ -135,6 +135,7 @@ def generate_report(
     elif transaction_type ==  "Buyout":
         rate_df = rate_df[rate_df['type_of_transaction'] == 'TRANSFER OF EXISTING MORTGAGE']
 
+
     # filter salary transfer
     salary_transfer = mortgage_info.get('salary_transfer')
     if salary_transfer == "Yes":
@@ -201,7 +202,10 @@ def generate_report(
     )
 
     documents_required = document_dict.get('requirements')
+    documents_required_dict = {f"document_{i+1}":documents_required[i] for i in range(0, len(documents_required))}
+    
     eligibility = document_dict.get('eligibility')
+    eligibility_dict = {f"eligibility_{i+1}":eligibility[i] for i in range(0, len(eligibility))}
 
     # offers
     offers_list = offers_df.to_dict('records')
@@ -261,7 +265,7 @@ def generate_report(
         "total_liabilities":total_liabilities,
         "loan_to_value":loan_to_value,
         "down_payment_pct":down_payment_pct,
-        "documents_required":documents_required,
+        "documents_required":documents_required_dict,
         "eligibility":eligibility,
         "offers_list":offers_list
     }
